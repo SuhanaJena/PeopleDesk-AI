@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeopleDesk AI | Employee Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="app-container">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">P</div>
+            <div>
+                <h2>PeopleDesk</h2>
+                <span>AI Employee Hub</span>
+            </div>
+        </div>
+
+        <nav>
+            <a href="#overview" class="nav-link active">⌂ Dashboard</a>
+            <a href="#assistant" class="nav-link">✦ AI Assistant</a>
+            <a href="#leave" class="nav-link">▣ Leave Management</a>
+            <a href="#requests" class="nav-link">◷ My Requests</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            AI Assistant Online
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">EMPLOYEE SELF-SERVICE PORTAL</p>
+                <h1 id="overview">Welcome back, {{ employee.name }}!</h1>
+                <p class="subtitle">Your workplace, simplified with AI.</p>
+            </div>
+            <div class="profile">
+                <div class="avatar">{{ employee.name[0] }}</div>
+                <div>
+                    <strong>{{ employee.name }}</strong>
+                    <small>{{ employee.employee_id }}</small>
+                </div>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">🌴</span>
+                <p>Available Leave Balance</p>
+                <h2>{{ employee.leave_balance }} <small>days</small></h2>
+                <span class="stat-note">Your current balance</span>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-icon">🏢</span>
+                <p>Department</p>
+                <h2>{{ employee.department }}</h2>
+                <span class="stat-note">Your team</span>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-icon">🆔</span>
+                <p>Employee ID</p>
+                <h2>{{ employee.employee_id }}</h2>
+                <span class="stat-note">Employee profile</span>
+            </div>
+        </section>
+
+        <section class="content-grid">
+
+            <div class="panel assistant-panel" id="assistant">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-label">YOUR AI COMPANION</span>
+                        <h2>PeopleDesk Assistant ✦</h2>
+                        <p>Ask anything about your employee services.</p>
+                    </div>
+                    <span class="online-badge">● Online</span>
+                </div>
+
+                <div class="chat-window" id="chatWindow">
+                    <div class="bot-message">
+                        <div class="bot-avatar">P</div>
+                        <div class="message-content">
+                            <strong>PeopleDesk AI</strong>
+                            <p>Hello {{ employee.name.split(' ')[0] }}! 👋 I'm your HR assistant. You can ask me about your leave balance, employee profile, or leave requests. How can I help you today?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="suggestions">
+                    <button onclick="sendSuggestion('What is my leave balance?')">My leave balance</button>
+                    <button onclick="sendSuggestion('Show my leave requests')">My requests</button>
+                    <button onclick="sendSuggestion('Tell me about my profile')">My profile</button>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Ask PeopleDesk anything..." onkeydown="if(event.key==='Enter') sendMessage()">
+                    <button id="sendButton" onclick="sendMessage()">➤</button>
+                </div>
+                <p class="privacy-note">AI responses are based on your available demo employee information.</p>
+            </div>
+
+            <div class="panel leave-panel" id="leave">
+                <div class="panel-heading">
+                    <div>
+                        <span class="section-label">TIME OFF</span>
+                        <h2>Apply for Leave</h2>
+                        <p>Submit a new leave request.</p>
+                    </div>
+                    <span class="leave-icon">📅</span>
+                </div>
+
+                <form id="leaveForm">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" required>
+
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" required>
+
+                    <label for="reason">Reason for Leave</label>
+                    <textarea id="reason" placeholder="Briefly describe your reason..." rows="4"></textarea>
+
+                    <button type="submit" class="primary-button">Submit Leave Request →</button>
+                </form>
+
+                <div id="leaveMessage"></div>
+                <p class="form-note">Requests are saved as Pending in this demonstration.</p>
+            </div>
+
+        </section>
+
+        <section class="panel requests-panel" id="requests">
+            <div class="panel-heading">
+                <div>
+                    <span class="section-label">ACTIVITY</span>
+                    <h2>Recent Leave Requests</h2>
+                    <p>Track the status of your submitted requests.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestTable">
+                        {% for item in leave_requests %}
+                        <tr>
+                            <td>#{{ item.request_id }}</td>
+                            <td>{{ item.start_date }}</td>
+                            <td>{{ item.end_date }}</td>
+                            <td>{{ item.reason or 'Not specified' }}</td>
+                            <td><span class="status pending">{{ item.status }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="empty-state">No leave requests yet. Your requests will appear here.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <span>PeopleDesk AI © 2026</span>
+            <span>Employee Self-Service • AI Powered Demo</span>
+        </footer>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
